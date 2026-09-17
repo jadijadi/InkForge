@@ -1,0 +1,16 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+.swiftpm/
+# SwiftPM
+.build/
+Package.resolved
+# macOS
+.DS_Store
+
+# Generated EPUBs
+Examples/**/output/
