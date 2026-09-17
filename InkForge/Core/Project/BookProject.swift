@@ -104,6 +104,26 @@ struct BookProject: Equatable {
         return metadata
     }
 
+    /// Finds the project folder that a file belongs to by walking up from its directory and
+    /// looking for project markers. Falls back to the file's own directory.
+    static func projectRoot(containing fileURL: URL) -> URL {
+        let fm = FileManager.default
+        let home = fm.homeDirectoryForCurrentUser.standardizedFileURL.path
+        var directory = fileURL.standardizedFileURL.deletingLastPathComponent()
+        let start = directory
+        for _ in 0..<8 {
+            let markers = ["book.md", "metadata.json", "chapters", ".git"]
+            if markers.contains(where: { fm.fileExists(atPath: directory.appendingPathComponent($0).path) }) {
+                return directory
+            }
+            if directory.lastPathComponent == "chapters" { return directory.deletingLastPathComponent() }
+            let parent = directory.deletingLastPathComponent()
+            if directory.path == home || parent.path == directory.path { break }
+            directory = parent
+        }
+        return start
+    }
+
     static func firstHeading(in markdown: String) -> String? {
         for line in markdown.split(separator: "\n") {
             let trimmed = line.trimmingCharacters(in: .whitespaces)

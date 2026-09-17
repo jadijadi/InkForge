@@ -33,6 +33,22 @@ targets:
         NSHumanReadableCopyright: ""
         LSApplicationCategoryType: public.app-category.productivity
         NSMainStoryboardFile: ""
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Markdown Document
+            CFBundleTypeRole: Editor
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [net.daringfireball.markdown]
+          - CFBundleTypeName: Project Folder
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [public.folder]
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: net.daringfireball.markdown
+            UTTypeDescription: Markdown Document
+            UTTypeConformsTo: [public.plain-text]
+            UTTypeTagSpecification:
+              public.filename-extension: [md, markdown, mdown]
+              public.mime-type: [text/markdown]
     entitlements:
       path: InkForge/Resources/InkForge.entitlements
       properties:

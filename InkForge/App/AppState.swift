@@ -43,6 +43,7 @@ final class AppState: ObservableObject {
     // MARK: Startup
 
     func restoreSession() {
+        guard project == nil else { return }
         if let url = settings.lastProjectURL, FileManager.default.fileExists(atPath: url.path) {
             openProject(at: url)
         } else {
@@ -65,29 +66,47 @@ final class AppState: ObservableObject {
         openProject(at: url)
     }
 
-    func openProject(at url: URL) {
-        flushPendingSave()
+    func openProject(at url: URL, then file: URL? = nil) {
         let project = BookProject(rootURL: url)
-        self.project = project
-        settings.noteProjectOpened(project.rootURL)
-        document = nil
-        conflict = nil
-        previewHTML = ""
+        if project != self.project {
+            flushPendingSave()
+            self.project = project
+            settings.noteProjectOpened(project.rootURL)
+            document = nil
+            conflict = nil
+            previewHTML = ""
+
+            watcher?.stop()
+            watcher = FileWatcher(directory: project.rootURL) { [weak self] paths in
+                Task { @MainActor in self?.handleFileSystemEvents(paths) }
+            }
+            watcher?.start()
+            terminal.start(in: project.rootURL)
+        }
         rescanFiles()
 
-        watcher?.stop()
-        watcher = FileWatcher(directory: project.rootURL) { [weak self] paths in
-            Task { @MainActor in self?.handleFileSystemEvents(paths) }
-        }
-        watcher?.start()
-        terminal.start(in: project.rootURL)
-
-        if let last = settings.lastFile(in: project.rootURL),
-           FileManager.default.fileExists(atPath: project.url(forRelativePath: last).path) {
+        if let file, FileManager.default.fileExists(atPath: file.path) {
+            openFile(file)
+        } else if document == nil, let last = settings.lastFile(in: project.rootURL),
+                  FileManager.default.fileExists(atPath: project.url(forRelativePath: last).path) {
             openFile(project.url(forRelativePath: last))
-        } else if let first = project.defaultFile() {
+        } else if document == nil, let first = project.defaultFile() {
             openFile(first)
         }
+    }
+
+    /// Files or folders handed to us by Finder ("Open With"), the Dock, or `open -a InkForge`.
+    func openExternal(_ urls: [URL]) {
+        for url in urls {
+            var isDirectory: ObjCBool = false
+            guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) else { continue }
+            if isDirectory.boolValue {
+                openProject(at: url)
+            } else {
+                openProject(at: BookProject.projectRoot(containing: url), then: url)
+            }
+        }
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     func rescanFiles() {

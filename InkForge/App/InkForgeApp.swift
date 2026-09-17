@@ -2,12 +2,15 @@ import SwiftUI
 
 @main
 struct InkForgeApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var app = AppState(settings: .shared)
 
     var body: some Scene {
-        WindowGroup {
+        // A single window: the terminal process and file watcher are per-app, not per-window.
+        Window("InkForge", id: "main") {
             MainWindowView()
                 .environmentObject(app)
+                .onAppear { delegate.openHandler = { app.openExternal($0) } }
         }
         .defaultSize(width: 1400, height: 860)
         .commands { commands }

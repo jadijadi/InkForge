@@ -14,6 +14,7 @@
 		3CF9DF316CC51BD8F113BE99 /* PreviewScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 913F9B628EB4D82B4E2ABCF8 /* PreviewScheme.swift */; };
 		3D6E0C56BB4D4ACEFEAE8B62 /* ThreePaneSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC3D1130253634E460DF928 /* ThreePaneSplitView.swift */; };
 		50FD4A03DA9CB3E20984F05F /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5076F457BDB82A1109373D /* FileWatcher.swift */; };
+		51ACECEA633D79595D4656DD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FE48B4C8920F7D0DA20437 /* AppDelegate.swift */; };
 		58E99F02BE25D012A1FFA110 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = DC5D8E4E25040E2113FB1851 /* SwiftTerm */; };
 		5D0A07F72C2296C9D53DB2DA /* ReadingStylesheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF35429764132B859F05F0DD /* ReadingStylesheet.swift */; };
 		60C862341A6DAE14D2ED53C0 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FD1AE4C0FF2B8A080FA1220 /* AppSettings.swift */; };
@@ -67,6 +68,7 @@
 		D8826ED602A314504D1A4B00 /* HTMLRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLRenderer.swift; sourceTree = "<group>"; };
 		E65DA1C699DAD71B58DA32F3 /* Pane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pane.swift; sourceTree = "<group>"; };
 		EF35429764132B859F05F0DD /* ReadingStylesheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingStylesheet.swift; sourceTree = "<group>"; };
+		F3FE48B4C8920F7D0DA20437 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F848ECFB0045F57E48CA2D33 /* EPUBExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EPUBExporter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -157,6 +159,7 @@
 		A1D55E639E262C5649D47B10 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				F3FE48B4C8920F7D0DA20437 /* AppDelegate.swift */,
 				7C844990BE69548BF237B4DF /* AppState.swift */,
 				7CFE47689E9AD9E022704E03 /* InkForgeApp.swift */,
 				26188044238A62F6B6A95394 /* MainWindowView.swift */,
@@ -311,6 +314,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				51ACECEA633D79595D4656DD /* AppDelegate.swift in Sources */,
 				60C862341A6DAE14D2ED53C0 /* AppSettings.swift in Sources */,
 				8CCA772EBA4C730AEF2BE45D /* AppState.swift in Sources */,
 				FDC8E5CC2521C2F813C5F676 /* BookMetadata.swift in Sources */,

@@ -15,7 +15,6 @@ final class TerminalController: NSObject, ObservableObject {
 
     private let settings: AppSettings
     private var pendingCommand: String?
-    private var pendingRestartDirectory: URL?
     private(set) var workingDirectory: URL?
     private var cancellables: Set<AnyCancellable> = []
 
@@ -38,11 +37,25 @@ final class TerminalController: NSObject, ObservableObject {
     func start(in directory: URL?) {
         workingDirectory = directory
         if isRunning {
-            pendingRestartDirectory = directory ?? FileManager.default.homeDirectoryForCurrentUser
-            terminalView.terminate()
-            return
+            stopShell()
+            terminalView.getTerminal().resetToInitialState()
+            terminalView.setNeedsDisplay(terminalView.bounds)
         }
         launchShell(in: directory)
+    }
+
+    /// SwiftTerm's `terminate()` only sends SIGTERM, which interactive shells ignore, and it
+    /// reports the process as stopped without calling the delegate. Hang up the shell
+    /// explicitly (zsh/bash forward HUP to their jobs, so a running agent goes with it).
+    private func stopShell() {
+        let pid = terminalView.process.shellPid
+        terminalView.terminate()
+        guard pid > 0 else { return }
+        kill(pid, SIGHUP)
+        DispatchQueue.global().asyncAfter(deadline: .now() + 1.5) {
+            if kill(pid, 0) == 0 { kill(pid, SIGKILL) }
+        }
+        isRunning = false
     }
 
     func restart() {
@@ -99,15 +112,8 @@ extension TerminalController: LocalProcessTerminalViewDelegate {
         Task { @MainActor in
             self.isRunning = false
             self.lastExitCode = exitCode
-            if let directory = self.pendingRestartDirectory {
-                self.pendingRestartDirectory = nil
-                self.terminalView.getTerminal().resetToInitialState()
-                self.terminalView.setNeedsDisplay(self.terminalView.bounds)
-                self.launchShell(in: directory)
-            } else {
-                let status = exitCode.map { "exit code \($0)" } ?? "terminated"
-                self.terminalView.feed(text: "\r\n\u{1b}[2m[process ended: \(status) — press ⌘⏎ to run the agent again]\u{1b}[0m\r\n")
-            }
+            let status = exitCode.map { "exit code \($0)" } ?? "terminated"
+            self.terminalView.feed(text: "\r\n\u{1b}[2m[process ended: \(status) — press ⌘⏎ to run the agent again]\u{1b}[0m\r\n")
         }
     }
 }
