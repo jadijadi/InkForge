@@ -62,6 +62,30 @@ final class TerminalController: NSObject, ObservableObject {
         start(in: workingDirectory)
     }
 
+    /// The directory the shell is believed to be in: the last one we started it in or sent it
+    /// to, refined by OSC 7 reports if the user's shell emits them.
+    private(set) var shellDirectory: URL?
+
+    /// Moves the shell to `directory` by typing a `cd`, but only while the shell itself is in
+    /// the foreground. If an agent (or any other program) owns the terminal, nothing is sent.
+    func changeDirectory(to directory: URL) {
+        let directory = directory.standardizedFileURL
+        guard isRunning, directory != shellDirectory, isShellIdle else { return }
+        shellDirectory = directory
+        terminalView.send(txt: "cd \(Self.shellQuoted(directory.path))\r")
+    }
+
+    /// True when the PTY's foreground process group is the shell's own, i.e. it is at a prompt.
+    private var isShellIdle: Bool {
+        let process = terminalView.process!
+        guard process.childfd >= 0, process.shellPid > 0 else { return false }
+        return tcgetpgrp(process.childfd) == process.shellPid
+    }
+
+    private static func shellQuoted(_ path: String) -> String {
+        "'" + path.replacingOccurrences(of: "'", with: "'\\''") + "'"
+    }
+
     /// Types `command` into the shell. If the shell has exited, it is relaunched first.
     func run(command: String) {
         let trimmed = command.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -87,6 +111,7 @@ final class TerminalController: NSObject, ObservableObject {
 
         terminalView.startProcess(executable: shell, args: ["-l"], environment: environment,
                                   execName: "-" + shellName, currentDirectory: directory?.path)
+        shellDirectory = directory?.standardizedFileURL
         isRunning = true
         lastExitCode = nil
         if let command = pendingCommand {
@@ -106,7 +131,10 @@ extension TerminalController: LocalProcessTerminalViewDelegate {
         Task { @MainActor in self.title = title }
     }
 
-    nonisolated func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {}
+    nonisolated func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {
+        guard let directory, let url = URL(string: directory), url.isFileURL else { return }
+        Task { @MainActor in self.shellDirectory = url.standardizedFileURL }
+    }
 
     nonisolated func processTerminated(source: TerminalView, exitCode: Int32?) {
         Task { @MainActor in

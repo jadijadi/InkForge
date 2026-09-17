@@ -6,7 +6,7 @@ struct MainWindowView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ThreePaneSplitView(isPreviewVisible: settings.isPreviewVisible)
+            MainSplitView(isFileBrowserVisible: settings.isFileBrowserVisible, isPreviewVisible: settings.isPreviewVisible)
             StatusBar()
         }
         .frame(minWidth: 900, minHeight: 500)
@@ -47,6 +47,11 @@ struct MainWindowView: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItemGroup(placement: .navigation) {
+            Button { app.toggleFileBrowser() } label: {
+                Label("Files", systemImage: "sidebar.leading")
+                    .symbolVariant(settings.isFileBrowserVisible ? .fill : .none)
+            }
+            .help("Show or hide the file browser (⌥⌘F)")
             Button { app.chooseProject() } label: { Label("Open Project", systemImage: "folder") }
                 .help("Open a project folder (⌘O)")
             Button { app.promptForNewFile() } label: { Label("New File", systemImage: "doc.badge.plus") }

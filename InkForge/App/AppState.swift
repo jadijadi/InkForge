@@ -11,6 +11,11 @@ final class AppState: ObservableObject {
 
     @Published private(set) var project: BookProject?
     @Published private(set) var markdownFiles: [URL] = []
+    @Published private(set) var fileTree: [FileNode] = []
+    /// Selection in the file browser; may be a directory.
+    @Published var selectedURL: URL?
+    /// A selected file the editor can't show (binary or too large).
+    @Published private(set) var unsupportedFileURL: URL?
     @Published private(set) var document: EditorDocument?
     @Published private(set) var conflict: FileConflict?
     @Published private(set) var previewHTML = ""
@@ -75,6 +80,8 @@ final class AppState: ObservableObject {
             document = nil
             conflict = nil
             previewHTML = ""
+            selectedURL = nil
+            unsupportedFileURL = nil
 
             watcher?.stop()
             watcher = FileWatcher(directory: project.rootURL) { [weak self] paths in
@@ -110,27 +117,49 @@ final class AppState: ObservableObject {
     }
 
     func rescanFiles() {
-        guard let project else { markdownFiles = []; return }
+        guard let project else { markdownFiles = []; fileTree = []; return }
         markdownFiles = project.scanMarkdownFiles()
+        fileTree = FileTree.build(root: project.rootURL)
+    }
+
+    /// Selection from the file browser: directories move the terminal, files open in the editor.
+    func selectInBrowser(_ url: URL?) {
+        guard let url else { return }
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) else { return }
+        if isDirectory.boolValue {
+            terminal.changeDirectory(to: url)
+        } else {
+            openFile(url)
+        }
     }
 
     // MARK: Files
+
+    static let maximumEditableFileSize = 8 * 1024 * 1024
 
     func openFile(_ url: URL) {
         guard let project else { return }
         flushPendingSave()
         let url = url.standardizedFileURL
-        do {
-            let text = try String(contentsOf: url, encoding: .utf8)
-            document = EditorDocument(url: url, text: text, savedText: text,
-                                      knownModificationDate: Self.modificationDate(of: url),
-                                      reloadToken: (document?.reloadToken ?? 0) + 1)
+        selectedURL = url
+        terminal.changeDirectory(to: url.deletingLastPathComponent())
+
+        let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        guard size <= Self.maximumEditableFileSize, let text = try? String(contentsOf: url, encoding: .utf8) else {
+            document = nil
             conflict = nil
-            settings.setLastFile(project.relativePath(for: url), in: project.rootURL)
-            renderPreviewNow()
-        } catch {
-            alert = AppAlert(title: "Couldn't Open File", message: error.localizedDescription)
+            previewHTML = ""
+            unsupportedFileURL = url
+            return
         }
+        unsupportedFileURL = nil
+        document = EditorDocument(url: url, text: text, savedText: text,
+                                  knownModificationDate: Self.modificationDate(of: url),
+                                  reloadToken: (document?.reloadToken ?? 0) + 1)
+        conflict = nil
+        settings.setLastFile(project.relativePath(for: url), in: project.rootURL)
+        renderPreviewNow()
     }
 
     func promptForNewFile() {
@@ -216,13 +245,8 @@ final class AppState: ObservableObject {
     private func handleFileSystemEvents(_ paths: [String]) {
         guard let project else { return }
         checkCurrentFileForExternalChanges()
-        let touchesMarkdownOrFolder = paths.contains { path in
-            let url = URL(fileURLWithPath: path)
-            return BookProject.markdownExtensions.contains(url.pathExtension.lowercased())
-                || !FileManager.default.fileExists(atPath: path)
-                || (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
-        }
-        if touchesMarkdownOrFolder {
+        let onlyCurrentFile = paths.allSatisfy { URL(fileURLWithPath: $0).standardizedFileURL == document?.url }
+        if !onlyCurrentFile {
             rescanTask?.cancel()
             rescanTask = Task { [weak self] in
                 try? await Task.sleep(for: .milliseconds(300))
@@ -292,6 +316,7 @@ final class AppState: ObservableObject {
         document = nil
         conflict = nil
         previewHTML = ""
+        selectedURL = nil
         rescanFiles()
     }
 
@@ -309,6 +334,10 @@ final class AppState: ObservableObject {
     private func renderPreviewNow() {
         previewTask?.cancel()
         guard let document else { previewHTML = ""; return }
+        guard document.isMarkdown else {
+            previewHTML = "<pre class=\"plain\">\(HTMLRenderer.escape(document.text))</pre>"
+            return
+        }
         let baseDirectory = document.url.deletingLastPathComponent()
         let body = FrontMatter.parse(document.text).body
         previewHTML = HTMLRenderer.render(body) { source in
@@ -318,6 +347,10 @@ final class AppState: ObservableObject {
 
     func togglePreview() {
         settings.isPreviewVisible.toggle()
+    }
+
+    func toggleFileBrowser() {
+        settings.isFileBrowserVisible.toggle()
     }
 
     // MARK: Agent

@@ -14,6 +14,7 @@ final class AppSettings: ObservableObject {
         static let editorFontSize = "editorFontSize"
         static let terminalFontSize = "terminalFontSize"
         static let previewVisible = "previewVisible"
+        static let fileBrowserVisible = "fileBrowserVisible"
         static let lastProjectPath = "lastProjectPath"
         static let lastFileByProject = "lastFileByProject"
         static let recentProjects = "recentProjects"
@@ -27,6 +28,7 @@ final class AppSettings: ObservableObject {
     @Published var editorFontSize: Double { didSet { defaults.set(editorFontSize, forKey: Key.editorFontSize) } }
     @Published var terminalFontSize: Double { didSet { defaults.set(terminalFontSize, forKey: Key.terminalFontSize) } }
     @Published var isPreviewVisible: Bool { didSet { defaults.set(isPreviewVisible, forKey: Key.previewVisible) } }
+    @Published var isFileBrowserVisible: Bool { didSet { defaults.set(isFileBrowserVisible, forKey: Key.fileBrowserVisible) } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -37,6 +39,7 @@ final class AppSettings: ObservableObject {
             Key.editorFontSize: 14.0,
             Key.terminalFontSize: 13.0,
             Key.previewVisible: true,
+            Key.fileBrowserVisible: true,
         ])
         agentCommand = defaults.string(forKey: Key.agentCommand) ?? "claude"
         shellPath = defaults.string(forKey: Key.shellPath) ?? "/bin/zsh"
@@ -44,6 +47,7 @@ final class AppSettings: ObservableObject {
         editorFontSize = defaults.double(forKey: Key.editorFontSize)
         terminalFontSize = defaults.double(forKey: Key.terminalFontSize)
         isPreviewVisible = defaults.bool(forKey: Key.previewVisible)
+        isFileBrowserVisible = defaults.bool(forKey: Key.fileBrowserVisible)
     }
 
     // MARK: Session state

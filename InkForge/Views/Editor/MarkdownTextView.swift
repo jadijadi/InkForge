@@ -9,6 +9,7 @@ struct MarkdownTextView: NSViewRepresentable {
     let text: String
     let reloadToken: Int
     let fontSize: Double
+    var highlightMarkdown = true
     let onTextChange: (String) -> Void
 
     func makeCoordinator() -> Coordinator { Coordinator(fontSize: fontSize, onTextChange: onTextChange) }
@@ -50,6 +51,7 @@ struct MarkdownTextView: NSViewRepresentable {
         scrollView.hasVerticalRuler = true
         scrollView.rulersVisible = true
 
+        context.coordinator.highlighter.isEnabled = highlightMarkdown
         context.coordinator.textView = textView
         context.coordinator.ruler = ruler
         context.coordinator.install(scrollView: scrollView)
@@ -60,10 +62,16 @@ struct MarkdownTextView: NSViewRepresentable {
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         let coordinator = context.coordinator
         coordinator.onTextChange = onTextChange
+        var needsRehighlight = false
         if coordinator.highlighter.baseFont.pointSize != fontSize {
             coordinator.highlighter.setFontSize(fontSize)
-            coordinator.rehighlightAll()
+            needsRehighlight = true
         }
+        if coordinator.highlighter.isEnabled != highlightMarkdown {
+            coordinator.highlighter.isEnabled = highlightMarkdown
+            needsRehighlight = true
+        }
+        if needsRehighlight { coordinator.rehighlightAll() }
         if coordinator.loadedToken != reloadToken {
             coordinator.load(text, token: reloadToken)
         }

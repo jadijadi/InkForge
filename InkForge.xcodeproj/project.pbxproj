@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		20A15E1EDBD557DC47703FB3 /* FileTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E49734A7F8AF4EA5BB5EA5B /* FileTree.swift */; };
 		25AFD395B43CF06B3D0D548C /* WindowAccessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748B193F9E1A535983912732 /* WindowAccessor.swift */; };
 		2F2C9FDBE288F426D4230D40 /* MarkdownTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EAEB9C288266E3787CE330 /* MarkdownTextView.swift */; };
 		3997CFC0EC71FD160F62D5BA /* PaneHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29479753BF2BE361F679E76E /* PaneHeader.swift */; };
 		3AA600D405BACA92C132AA21 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22D9F1E89843B05AD2261589 /* SettingsView.swift */; };
 		3CF9DF316CC51BD8F113BE99 /* PreviewScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 913F9B628EB4D82B4E2ABCF8 /* PreviewScheme.swift */; };
-		3D6E0C56BB4D4ACEFEAE8B62 /* ThreePaneSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC3D1130253634E460DF928 /* ThreePaneSplitView.swift */; };
 		50FD4A03DA9CB3E20984F05F /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5076F457BDB82A1109373D /* FileWatcher.swift */; };
 		51ACECEA633D79595D4656DD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FE48B4C8920F7D0DA20437 /* AppDelegate.swift */; };
 		58E99F02BE25D012A1FFA110 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = DC5D8E4E25040E2113FB1851 /* SwiftTerm */; };
@@ -22,6 +22,7 @@
 		6B6834907C5A7380EEA27142 /* EditorPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 925CAA376972C9A55EB54179 /* EditorPane.swift */; };
 		7AB54AD632D72991036025ED /* PreviewPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9929D9D31D7BFFA49712ED95 /* PreviewPane.swift */; };
 		7F6FD9EB9DF3BB7165A5D854 /* MarkdownHighlighter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B97C1E73B01A5E540B25293 /* MarkdownHighlighter.swift */; };
+		8A86604A11A4245D209DEE87 /* MainSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D73BDBF05B8E1059BEE2A89 /* MainSplitView.swift */; };
 		8CCA772EBA4C730AEF2BE45D /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C844990BE69548BF237B4DF /* AppState.swift */; };
 		8F19094B3F4457B419EC0E21 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67BE97603087B70B60D1162B /* Assets.xcassets */; };
 		8F255C1F193D306F38617D6E /* LineNumberRulerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5A4D27AEE2D14555B047DF /* LineNumberRulerView.swift */; };
@@ -29,6 +30,7 @@
 		ABF7ACA87D3276D87B4C328C /* TerminalController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0554555F66B63E99EEE02E05 /* TerminalController.swift */; };
 		B3C39460ECDA93C608DE219C /* TerminalPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 283AC998FAD6147810E68D03 /* TerminalPane.swift */; };
 		BBF77FC7A98EF7890CF19055 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = D2E028634519D95E98E3DA85 /* ZIPFoundation */; };
+		C07F926725B4C7B8DEDF6014 /* FileBrowserPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD087FD43654F662410CD0B /* FileBrowserPane.swift */; };
 		C2696F783DEBE52EDE4294EE /* EPUBExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F848ECFB0045F57E48CA2D33 /* EPUBExporter.swift */; };
 		CB18B32FDE6971269A34F361 /* HTMLRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8826ED602A314504D1A4B00 /* HTMLRenderer.swift */; };
 		E5B9F52ADD1A6BD296A3511D /* MainWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26188044238A62F6B6A95394 /* MainWindowView.swift */; };
@@ -42,6 +44,7 @@
 /* Begin PBXFileReference section */
 		012B69676491EA3F63E633C3 /* BookProject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookProject.swift; sourceTree = "<group>"; };
 		0554555F66B63E99EEE02E05 /* TerminalController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalController.swift; sourceTree = "<group>"; };
+		0E49734A7F8AF4EA5BB5EA5B /* FileTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTree.swift; sourceTree = "<group>"; };
 		1B97C1E73B01A5E540B25293 /* MarkdownHighlighter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownHighlighter.swift; sourceTree = "<group>"; };
 		1F5A4D27AEE2D14555B047DF /* LineNumberRulerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineNumberRulerView.swift; sourceTree = "<group>"; };
 		22D9F1E89843B05AD2261589 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -55,11 +58,12 @@
 		7C844990BE69548BF237B4DF /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		7CFE47689E9AD9E022704E03 /* InkForgeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InkForgeApp.swift; sourceTree = "<group>"; };
 		7F5076F457BDB82A1109373D /* FileWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileWatcher.swift; sourceTree = "<group>"; };
-		8DC3D1130253634E460DF928 /* ThreePaneSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreePaneSplitView.swift; sourceTree = "<group>"; };
+		8D73BDBF05B8E1059BEE2A89 /* MainSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainSplitView.swift; sourceTree = "<group>"; };
 		8FD1AE4C0FF2B8A080FA1220 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		913F9B628EB4D82B4E2ABCF8 /* PreviewScheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewScheme.swift; sourceTree = "<group>"; };
 		925CAA376972C9A55EB54179 /* EditorPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorPane.swift; sourceTree = "<group>"; };
 		9929D9D31D7BFFA49712ED95 /* PreviewPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewPane.swift; sourceTree = "<group>"; };
+		ADD087FD43654F662410CD0B /* FileBrowserPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileBrowserPane.swift; sourceTree = "<group>"; };
 		B4EAEB9C288266E3787CE330 /* MarkdownTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTextView.swift; sourceTree = "<group>"; };
 		BA21E405915829D4FF7047A8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C2B313CD88E05543341FE4C1 /* FrontMatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrontMatter.swift; sourceTree = "<group>"; };
@@ -101,6 +105,7 @@
 			children = (
 				22D9F1E89843B05AD2261589 /* SettingsView.swift */,
 				A7B4E203B776213290647D94 /* Editor */,
+				7F3E9103DADC7D11CAF00D11 /* Files */,
 				7B26291E4C9D6DA7112B4CB6 /* Layout */,
 				E9CD48E36B9E4A1A776DF0EF /* Preview */,
 				CCBAB12279191DF697C9ECFF /* Terminal */,
@@ -125,6 +130,7 @@
 				490D22C345DBED79ED8B5BB5 /* BookMetadata.swift */,
 				012B69676491EA3F63E633C3 /* BookProject.swift */,
 				3DD13BABA71BB2AA8079257C /* EditorDocument.swift */,
+				0E49734A7F8AF4EA5BB5EA5B /* FileTree.swift */,
 				7F5076F457BDB82A1109373D /* FileWatcher.swift */,
 			);
 			path = Project;
@@ -141,11 +147,19 @@
 		7B26291E4C9D6DA7112B4CB6 /* Layout */ = {
 			isa = PBXGroup;
 			children = (
+				8D73BDBF05B8E1059BEE2A89 /* MainSplitView.swift */,
 				29479753BF2BE361F679E76E /* PaneHeader.swift */,
-				8DC3D1130253634E460DF928 /* ThreePaneSplitView.swift */,
 				748B193F9E1A535983912732 /* WindowAccessor.swift */,
 			);
 			path = Layout;
+			sourceTree = "<group>";
+		};
+		7F3E9103DADC7D11CAF00D11 /* Files */ = {
+			isa = PBXGroup;
+			children = (
+				ADD087FD43654F662410CD0B /* FileBrowserPane.swift */,
+			);
+			path = Files;
 			sourceTree = "<group>";
 		};
 		93022B1D853D22D358C5D15D = {
@@ -322,11 +336,14 @@
 				C2696F783DEBE52EDE4294EE /* EPUBExporter.swift in Sources */,
 				FEEC7727503BCAE0C38789C0 /* EditorDocument.swift in Sources */,
 				6B6834907C5A7380EEA27142 /* EditorPane.swift in Sources */,
+				C07F926725B4C7B8DEDF6014 /* FileBrowserPane.swift in Sources */,
+				20A15E1EDBD557DC47703FB3 /* FileTree.swift in Sources */,
 				50FD4A03DA9CB3E20984F05F /* FileWatcher.swift in Sources */,
 				6A7FEA7F294F6736FCD02A8C /* FrontMatter.swift in Sources */,
 				CB18B32FDE6971269A34F361 /* HTMLRenderer.swift in Sources */,
 				A10EB6820FD32CC6FC7ADBB0 /* InkForgeApp.swift in Sources */,
 				8F255C1F193D306F38617D6E /* LineNumberRulerView.swift in Sources */,
+				8A86604A11A4245D209DEE87 /* MainSplitView.swift in Sources */,
 				E5B9F52ADD1A6BD296A3511D /* MainWindowView.swift in Sources */,
 				7F6FD9EB9DF3BB7165A5D854 /* MarkdownHighlighter.swift in Sources */,
 				2F2C9FDBE288F426D4230D40 /* MarkdownTextView.swift in Sources */,
@@ -338,7 +355,6 @@
 				3AA600D405BACA92C132AA21 /* SettingsView.swift in Sources */,
 				ABF7ACA87D3276D87B4C328C /* TerminalController.swift in Sources */,
 				B3C39460ECDA93C608DE219C /* TerminalPane.swift in Sources */,
-				3D6E0C56BB4D4ACEFEAE8B62 /* ThreePaneSplitView.swift in Sources */,
 				25AFD395B43CF06B3D0D548C /* WindowAccessor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

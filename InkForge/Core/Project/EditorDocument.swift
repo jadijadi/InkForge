@@ -13,6 +13,7 @@ struct EditorDocument: Equatable {
     var reloadToken: Int = 0
 
     var isDirty: Bool { text != savedText }
+    var isMarkdown: Bool { BookProject.markdownExtensions.contains(url.pathExtension.lowercased()) }
 }
 
 enum FileConflict: Equatable {

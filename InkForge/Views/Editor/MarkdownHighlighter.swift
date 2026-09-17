@@ -3,6 +3,8 @@ import AppKit
 /// Regex-based Markdown syntax highlighting for an NSTextStorage.
 /// Works line by line, with fenced code blocks tracked across the whole document.
 final class MarkdownHighlighter {
+    /// Off for non-Markdown files: only the base attributes are applied.
+    var isEnabled = true
     private(set) var baseFont: NSFont
     private var boldFont: NSFont
     private var italicFont: NSFont
@@ -58,6 +60,7 @@ final class MarkdownHighlighter {
         guard text.length > 0 else { return }
         let range = text.lineRange(for: editedRange)
         storage.setAttributes(baseAttributes, range: range)
+        guard isEnabled else { return }
 
         var inCodeBlock = isInsideCodeBlock(at: range.location, text: text)
         var frontMatterEnd = 0

@@ -46,6 +46,7 @@ enum ReadingStylesheet {
     :root { color-scheme: light dark; }
     body { background: #fbfaf7; color: #1d1c1a; padding: 2.5em 3em 6em; max-width: 44em; }
     body.empty { color: #8c877d; text-align: center; padding-top: 6em; font-style: italic; }
+    pre.plain { background: none; padding: 0; font-size: 0.9em; white-space: pre-wrap; }
     @media (prefers-color-scheme: dark) {
       body { background: #1e1e1f; color: #dedbd4; }
       a { color: #7fa9ec; }

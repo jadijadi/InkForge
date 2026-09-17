@@ -12,7 +12,11 @@ struct EditorPane: View {
             }
             if let document = app.document {
                 MarkdownTextView(text: document.text, reloadToken: document.reloadToken,
-                                 fontSize: settings.editorFontSize) { app.editorTextDidChange($0) }
+                                 fontSize: settings.editorFontSize, highlightMarkdown: document.isMarkdown) {
+                    app.editorTextDidChange($0)
+                }
+            } else if let url = app.unsupportedFileURL {
+                unsupportedState(url)
             } else {
                 emptyState
             }
@@ -43,7 +47,7 @@ struct EditorPane: View {
                 } label: {
                     HStack(spacing: 5) {
                         Image(systemName: "doc.text")
-                        Text(app.document.map { project.relativePath(for: $0.url) } ?? "Choose a file")
+                        Text((app.document?.url ?? app.unsupportedFileURL).map { project.relativePath(for: $0) } ?? "Choose a file")
                             .lineLimit(1)
                             .truncationMode(.middle)
                     }
@@ -74,6 +78,20 @@ struct EditorPane: View {
         .frame(height: 30)
         .background(.bar)
         .overlay(alignment: .bottom) { Divider() }
+    }
+
+    private func unsupportedState(_ url: URL) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "doc.zipper")
+                .font(.system(size: 36, weight: .light))
+                .foregroundStyle(.tertiary)
+            Text(url.lastPathComponent).font(.headline)
+            Text("This file isn't editable text.")
+                .foregroundStyle(.secondary)
+            Button("Open with Default App") { NSWorkspace.shared.open(url) }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(nsColor: .textBackgroundColor))
     }
 
     private var emptyState: some View {

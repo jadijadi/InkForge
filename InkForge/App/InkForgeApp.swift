@@ -60,6 +60,8 @@ struct InkForgeApp: App {
             Button("Focus Preview") { app.focus(.preview) }
                 .keyboardShortcut("3")
             Divider()
+            Button(app.settings.isFileBrowserVisible ? "Hide Files" : "Show Files") { app.toggleFileBrowser() }
+                .keyboardShortcut("f", modifiers: [.command, .option])
             Button(app.settings.isPreviewVisible ? "Hide Preview" : "Show Preview") { app.togglePreview() }
                 .keyboardShortcut("p", modifiers: [.command, .option])
         }

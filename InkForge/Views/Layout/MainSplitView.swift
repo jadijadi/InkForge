@@ -1,17 +1,25 @@
 import SwiftUI
 import AppKit
 
-/// Terminal | Editor | Preview in an NSSplitViewController.
+/// Files | Terminal | Editor | Preview in an NSSplitViewController.
 /// AppKit is used here for real draggable dividers with autosaved pane sizes.
-struct ThreePaneSplitView: NSViewControllerRepresentable {
+struct MainSplitView: NSViewControllerRepresentable {
     @EnvironmentObject private var app: AppState
+    let isFileBrowserVisible: Bool
     let isPreviewVisible: Bool
 
     func makeNSViewController(context: Context) -> NSSplitViewController {
         let controller = NSSplitViewController()
         controller.splitView.isVertical = true
         controller.splitView.dividerStyle = .thin
-        controller.splitView.autosaveName = "InkForge.MainSplitView"
+        controller.splitView.autosaveName = "InkForge.MainSplitView.v2"
+
+        let files = NSSplitViewItem(sidebarWithViewController: host(FileBrowserPane()))
+        files.minimumThickness = 160
+        files.maximumThickness = 420
+        files.holdingPriority = .defaultLow + 3
+        files.canCollapse = true
+        files.isCollapsed = !isFileBrowserVisible
 
         let terminal = NSSplitViewItem(viewController: host(TerminalPane(terminal: app.terminal)))
         terminal.minimumThickness = 280
@@ -29,6 +37,7 @@ struct ThreePaneSplitView: NSViewControllerRepresentable {
         preview.collapseBehavior = .preferResizingSplitViewWithFixedSiblings
         preview.isCollapsed = !isPreviewVisible
 
+        controller.addSplitViewItem(files)
         controller.addSplitViewItem(terminal)
         controller.addSplitViewItem(editor)
         controller.addSplitViewItem(preview)
@@ -36,7 +45,12 @@ struct ThreePaneSplitView: NSViewControllerRepresentable {
     }
 
     func updateNSViewController(_ controller: NSSplitViewController, context: Context) {
-        guard let preview = controller.splitViewItems.last else { return }
+        guard controller.splitViewItems.count == 4 else { return }
+        let files = controller.splitViewItems[0]
+        if files.isCollapsed == isFileBrowserVisible {
+            files.animator().isCollapsed = !isFileBrowserVisible
+        }
+        let preview = controller.splitViewItems[3]
         if preview.isCollapsed == isPreviewVisible {
             preview.animator().isCollapsed = !isPreviewVisible
         }
