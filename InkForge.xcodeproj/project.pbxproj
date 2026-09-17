@@ -551,8 +551,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm";
 			requirement = {
-				kind = exactVersion;
-				version = 1.11.2;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.20.0;
 			};
 		};
 		9B45C79A6E63F90BDC7BDA62 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {

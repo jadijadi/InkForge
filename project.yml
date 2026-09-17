@@ -9,7 +9,7 @@ options:
 packages:
   SwiftTerm:
     url: https://github.com/migueldeicaza/SwiftTerm
-    exactVersion: "1.11.2"
+    from: "1.20.0"
   swift-markdown:
     url: https://github.com/swiftlang/swift-markdown
     from: "0.5.0"
