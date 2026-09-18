@@ -158,6 +158,11 @@ final class InkTerminalView: LocalProcessTerminalView {
         applyTheme()
     }
 
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        applyTheme()
+    }
+
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
         applyTheme()

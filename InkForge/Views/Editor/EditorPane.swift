@@ -11,7 +11,7 @@ struct EditorPane: View {
                 ConflictBanner(conflict: conflict)
             }
             if let document = app.document {
-                MarkdownTextView(text: document.text, reloadToken: document.reloadToken,
+                MarkdownTextView(fileURL: document.url, text: document.text, reloadToken: document.reloadToken,
                                  fontSize: settings.editorFontSize, highlightMarkdown: document.isMarkdown) {
                     app.editorTextDidChange($0)
                 }
