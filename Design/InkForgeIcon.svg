@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2b2170"/>
+      <stop offset="1" stop-color="#6b3fe0"/>
+    </linearGradient>
+    <linearGradient id="nib" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e6e1ff"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffb347" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffb347" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background: macOS icon squircle -->
+  <rect x="0" y="0" width="1024" height="1024" rx="228" fill="url(#bg)"/>
+
+  <!-- Spark glow under the nib tip -->
+  <circle cx="512" cy="812" r="150" fill="url(#glow)"/>
+
+  <!-- Nib: rounded top, edges curving in to the tip; slit and breather hole cut out -->
+  <path fill="url(#nib)" fill-rule="evenodd" d="
+    M 512 790
+    C 470 700, 380 610, 334 508
+    A 184 184 0 0 1 690 508
+    C 644 610, 554 700, 512 790
+    Z
+    M 512 770
+    L 499 575
+    A 13 13 0 0 1 525 575
+    Z
+    M 512 512
+    a 38 38 0 1 0 0.1 0
+    Z"/>
+
+  <!-- Spark: four-point star at the tip -->
+  <path fill="#ffb347" d="
+    M 512 720
+    C 520 770, 540 790, 600 800
+    C 540 810, 520 830, 512 880
+    C 504 830, 484 810, 424 800
+    C 484 790, 504 770, 512 720
+    Z"/>
+</svg>
