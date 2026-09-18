@@ -109,7 +109,7 @@ struct FileOutlineView: NSViewRepresentable {
         func reveal(_ url: URL?) {
             guard let url, let outline, let root else { return }
             let target = url.standardizedFileURL
-            guard target.path.hasPrefix(root.url.path == "/" ? "/" : root.url.path + "/") else { return }
+            guard root.contains(target) else { return }
             // Expand every ancestor between the root and the target.
             var ancestors: [URL] = []
             var cursor = target.deletingLastPathComponent()

@@ -32,14 +32,21 @@ final class FileNode {
         cachedChildren = nil
     }
 
-    /// Finds an already-loaded descendant, loading directories along the path as needed.
+    /// Path prefix shared by everything inside this directory ("/" for the root volume).
+    var containedPathPrefix: String { url.path == "/" ? "/" : url.path + "/" }
+
+    func contains(_ target: URL) -> Bool {
+        target.standardizedFileURL.path.hasPrefix(containedPathPrefix)
+    }
+
+    /// Finds a descendant, loading directories along the path as needed.
     func descendant(at target: URL) -> FileNode? {
         let target = target.standardizedFileURL
         if target == url { return self }
-        guard isDirectory, target.path.hasPrefix(url.path + "/") else { return nil }
+        guard isDirectory, contains(target) else { return nil }
         for child in children {
             if target == child.url { return child }
-            if child.isDirectory, target.path.hasPrefix(child.url.path + "/") { return child.descendant(at: target) }
+            if child.isDirectory, child.contains(target) { return child.descendant(at: target) }
         }
         return nil
     }

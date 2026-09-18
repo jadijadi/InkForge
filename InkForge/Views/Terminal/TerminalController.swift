@@ -78,7 +78,6 @@ final class TerminalController: NSObject, ObservableObject {
         let current = ProcessWorkingDirectory.of(pid: terminalView.process.shellPid) ?? shellDirectory
         guard directory != current else { return }
         requestedDirectory = directory
-        shellDirectory = directory
         terminalView.send(txt: "cd \(Self.shellQuoted(directory.path))\r")
     }
 

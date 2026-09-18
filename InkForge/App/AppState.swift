@@ -152,8 +152,7 @@ final class AppState: ObservableObject {
     /// Makes sure `url` is under the browser root (switching to / if needed), then expands to it.
     private func revealInBrowser(_ url: URL) {
         let url = url.standardizedFileURL
-        let rootPath = browserRootURL.path == "/" ? "/" : browserRootURL.path + "/"
-        if !url.path.hasPrefix(rootPath) {
+        if !FileTree.root(browserRootURL).contains(url) {
             setBrowserRoot(URL(fileURLWithPath: "/"))
         }
         browserRevealURL = url
