@@ -6,6 +6,7 @@ struct FileOutlineView: NSViewRepresentable {
     let rootURL: URL
     /// A location to expand to and select (project folder or current file), when it changes.
     let revealURL: URL?
+    let revealToken: Int
     /// Bumped when the tree should be re-read from disk.
     let treeVersion: Int
     let onSelect: (URL) -> Void
@@ -54,8 +55,8 @@ struct FileOutlineView: NSViewRepresentable {
             coordinator.refresh()
         }
         coordinator.treeVersion = treeVersion
-        if coordinator.lastRevealed != revealURL {
-            coordinator.lastRevealed = revealURL
+        if coordinator.lastRevealToken != revealToken {
+            coordinator.lastRevealToken = revealToken
             coordinator.reveal(revealURL)
         }
     }
@@ -65,7 +66,7 @@ struct FileOutlineView: NSViewRepresentable {
         weak var outline: NSOutlineView?
         private(set) var root: FileNode?
         var treeVersion = 0
-        var lastRevealed: URL?
+        var lastRevealToken = -1
         private var isProgrammaticSelection = false
 
         init(onSelect: @escaping (URL) -> Void) {
@@ -120,6 +121,7 @@ struct FileOutlineView: NSViewRepresentable {
                 if let node = root.descendant(at: ancestor) { outline.expandItem(node) }
             }
             if let node = root.descendant(at: target) {
+                if node.isDirectory { outline.expandItem(node) }
                 selectSilently(node)
                 outline.scrollRowToVisible(outline.row(forItem: node))
             }

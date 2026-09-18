@@ -11,7 +11,7 @@ struct FileBrowserPane: View {
                 .padding(.vertical, 5)
             Divider()
             FileOutlineView(rootURL: app.browserRootURL, revealURL: app.browserRevealURL,
-                            treeVersion: app.fileTreeVersion) { url in
+                            revealToken: app.browserRevealToken, treeVersion: app.fileTreeVersion) { url in
                 app.selectInBrowser(url)
             }
         }

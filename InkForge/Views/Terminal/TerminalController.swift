@@ -62,17 +62,42 @@ final class TerminalController: NSObject, ObservableObject {
         start(in: workingDirectory)
     }
 
-    /// The directory the shell is believed to be in: the last one we started it in or sent it
-    /// to, refined by OSC 7 reports if the user's shell emits them.
-    private(set) var shellDirectory: URL?
+    /// The shell's working directory, polled from the kernel while it runs.
+    @Published private(set) var shellDirectory: URL?
+    /// Fires when the working directory changed because of something typed in the terminal
+    /// (not a `cd` InkForge sent itself).
+    let userChangedDirectory = PassthroughSubject<URL, Never>()
+    private var requestedDirectory: URL?
+    private var directoryPoll: Timer?
 
     /// Moves the shell to `directory` by typing a `cd`, but only while the shell itself is in
     /// the foreground. If an agent (or any other program) owns the terminal, nothing is sent.
     func changeDirectory(to directory: URL) {
         let directory = directory.standardizedFileURL
-        guard isRunning, directory != shellDirectory, isShellIdle else { return }
+        guard isRunning, isShellIdle else { return }
+        let current = ProcessWorkingDirectory.of(pid: terminalView.process.shellPid) ?? shellDirectory
+        guard directory != current else { return }
+        requestedDirectory = directory
         shellDirectory = directory
         terminalView.send(txt: "cd \(Self.shellQuoted(directory.path))\r")
+    }
+
+    private func startDirectoryPolling() {
+        directoryPoll?.invalidate()
+        directoryPoll = Timer.scheduledTimer(withTimeInterval: 0.7, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.pollDirectory() }
+        }
+    }
+
+    private func pollDirectory() {
+        guard isRunning, let pid = terminalView.process?.shellPid, pid > 0,
+              let current = ProcessWorkingDirectory.of(pid: pid), current != shellDirectory else { return }
+        shellDirectory = current
+        if current == requestedDirectory {
+            requestedDirectory = nil
+        } else {
+            userChangedDirectory.send(current)
+        }
     }
 
     /// True when the PTY's foreground process group is the shell's own, i.e. it is at a prompt.
@@ -112,7 +137,9 @@ final class TerminalController: NSObject, ObservableObject {
         terminalView.startProcess(executable: shell, args: ["-l"], environment: environment,
                                   execName: "-" + shellName, currentDirectory: directory?.path)
         shellDirectory = directory?.standardizedFileURL
+        requestedDirectory = nil
         isRunning = true
+        startDirectoryPolling()
         lastExitCode = nil
         if let command = pendingCommand {
             pendingCommand = nil
@@ -131,14 +158,12 @@ extension TerminalController: LocalProcessTerminalViewDelegate {
         Task { @MainActor in self.title = title }
     }
 
-    nonisolated func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {
-        guard let directory, let url = URL(string: directory), url.isFileURL else { return }
-        Task { @MainActor in self.shellDirectory = url.standardizedFileURL }
-    }
+    nonisolated func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {}
 
     nonisolated func processTerminated(source: TerminalView, exitCode: Int32?) {
         Task { @MainActor in
             self.isRunning = false
+            self.directoryPoll?.invalidate()
             self.lastExitCode = exitCode
             let status = exitCode.map { "exit code \($0)" } ?? "terminated"
             self.terminalView.feed(text: "\r\n\u{1b}[2m[process ended: \(status) — press ⌘⏎ to run the agent again]\u{1b}[0m\r\n")

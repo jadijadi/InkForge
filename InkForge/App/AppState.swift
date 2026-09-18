@@ -13,8 +13,9 @@ final class AppState: ObservableObject {
     @Published private(set) var markdownFiles: [URL] = []
     /// Folder the file browser is rooted at (home by default).
     @Published private(set) var browserRootURL: URL
-    /// Location the browser should expand to and select.
+    /// Location the browser should expand to and select; the token distinguishes repeat requests.
     @Published private(set) var browserRevealURL: URL?
+    @Published private(set) var browserRevealToken = 0
     /// Bumped whenever the browser should re-read the disk.
     @Published private(set) var fileTreeVersion = 0
     /// A selected file the editor can't show (binary or too large).
@@ -46,6 +47,9 @@ final class AppState: ObservableObject {
         self.browserRootURL = settings.browserRootURL
         settings.$autosaveEnabled.dropFirst().sink { [weak self] enabled in
             if enabled { self?.scheduleAutosave() }
+        }.store(in: &cancellables)
+        terminal.userChangedDirectory.sink { [weak self] directory in
+            self?.revealInBrowser(directory)
         }.store(in: &cancellables)
     }
 
@@ -153,6 +157,7 @@ final class AppState: ObservableObject {
             setBrowserRoot(URL(fileURLWithPath: "/"))
         }
         browserRevealURL = url
+        browserRevealToken += 1
     }
 
     /// Selection from the file browser: folders move the terminal; files open in the editor,
