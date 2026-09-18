@@ -78,6 +78,21 @@ enum ReadingStylesheet {
         window.scrollTo(0, y);
       }
     };
+    // ⌘-double-click: select the word under the pointer and ask the app for its definition.
+    document.addEventListener("dblclick", (event) => {
+      if (!event.metaKey) return;
+      const range = document.caretRangeFromPoint(event.clientX, event.clientY);
+      if (!range) return;
+      range.expand("word");
+      const word = range.toString().trim();
+      if (!word) return;
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      const rect = range.getBoundingClientRect();
+      window.webkit.messageHandlers.lookup.postMessage({ word, x: rect.left, y: rect.bottom - 3 });
+      event.preventDefault();
+    });
     </script>
     </html>
     """

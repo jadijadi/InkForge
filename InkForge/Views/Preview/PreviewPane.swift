@@ -21,6 +21,7 @@ struct MarkdownWebView: NSViewRepresentable {
     func makeNSView(context: Context) -> WKWebView {
         let configuration = WKWebViewConfiguration()
         configuration.setURLSchemeHandler(PreviewSchemeHandler(), forURLScheme: PreviewScheme.scheme)
+        configuration.userContentController.add(context.coordinator, name: "lookup")
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
         webView.setValue(false, forKey: "drawsBackground")
@@ -40,7 +41,11 @@ struct MarkdownWebView: NSViewRepresentable {
         context.coordinator.setContent(html)
     }
 
-    final class Coordinator: NSObject, WKNavigationDelegate {
+    static func dismantleNSView(_ webView: WKWebView, coordinator: Coordinator) {
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "lookup")
+    }
+
+    final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         weak var webView: WKWebView?
         var pendingHTML: String?
         var focusObserver: NSObjectProtocol?
@@ -60,6 +65,15 @@ struct MarkdownWebView: NSViewRepresentable {
             lastSent = html
             guard let data = try? JSONEncoder().encode(html), let literal = String(data: data, encoding: .utf8) else { return }
             webView.evaluateJavaScript("window.inkforge.setContent(\(literal))")
+        }
+
+        /// Dictionary lookup requested by the page (⌘-double-click); coordinates are page points,
+        /// which match the flipped view coordinates of WKWebView.
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            guard message.name == "lookup", let body = message.body as? [String: Any],
+                  let word = body["word"] as? String, let x = body["x"] as? Double, let y = body["y"] as? Double,
+                  let webView else { return }
+            webView.showDefinition(for: NSAttributedString(string: word), at: NSPoint(x: x, y: y))
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
