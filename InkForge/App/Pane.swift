@@ -15,4 +15,8 @@ enum Pane: Int, CaseIterable {
 extension Notification.Name {
     /// Posted with a `Pane` as the object to move keyboard focus into that pane.
     static let inkForgeFocusPane = Notification.Name("dev.jadi.InkForge.focusPane")
+    /// Posted with a `Double` source line (1-based, fractional) when the user scrolls the editor.
+    static let inkForgeEditorScrolled = Notification.Name("dev.jadi.InkForge.editorScrolled")
+    /// Posted with a `Double` source line when the user scrolls the preview.
+    static let inkForgePreviewScrolled = Notification.Name("dev.jadi.InkForge.previewScrolled")
 }

@@ -17,6 +17,7 @@ struct SettingsView: View {
             }
             Section("Editor") {
                 Toggle("Save automatically while typing", isOn: $settings.autosaveEnabled)
+                Toggle("Keep editor and preview scrolled together", isOn: $settings.syncScrolling)
                 Slider(value: $settings.editorFontSize, in: 10...24, step: 1) {
                     Text("Editor font size: \(Int(settings.editorFontSize))")
                 }

@@ -69,15 +69,67 @@ enum ReadingStylesheet {
     </head>
     <body class="empty">Nothing to preview</body>
     <script>
+    const sync = { lastProgrammatic: 0, pending: false };
+    function lineAnchors() {
+      const anchors = [];
+      for (const el of document.querySelectorAll("[data-line]")) {
+        anchors.push({ line: Number(el.dataset.line), top: el.getBoundingClientRect().top + window.scrollY });
+      }
+      return anchors;
+    }
     window.inkforge = {
       setContent(html) {
         const body = document.body;
         const y = window.scrollY;
         body.className = html.trim() ? "" : "empty";
         body.innerHTML = html.trim() ? html : "Nothing to preview";
+        sync.lastProgrammatic = Date.now();
+        window.scrollTo(0, y);
+      },
+      // Scrolls so the block containing source `line` (fractional) sits at the top.
+      scrollToLine(line) {
+        const anchors = lineAnchors();
+        if (!anchors.length) return;
+        let y;
+        if (line <= anchors[0].line) {
+          y = anchors[0].top * Math.max(0, (line - 1) / Math.max(1, anchors[0].line - 1));
+        } else {
+          let i = anchors.length - 1;
+          while (i > 0 && anchors[i].line > line) i--;
+          const a = anchors[i], b = anchors[i + 1];
+          if (b && b.line > a.line) {
+            y = a.top + (b.top - a.top) * (line - a.line) / (b.line - a.line);
+          } else {
+            const end = document.documentElement.scrollHeight;
+            y = a.top + (end - a.top) * Math.min(1, (line - a.line) / 20);
+          }
+        }
+        y = Math.max(0, y - 16);
+        if (Math.abs(window.scrollY - y) < 2) return;
+        sync.lastProgrammatic = Date.now();
         window.scrollTo(0, y);
       }
     };
+    window.addEventListener("scroll", () => {
+      if (Date.now() - sync.lastProgrammatic < 250 || sync.pending) return;
+      sync.pending = true;
+      requestAnimationFrame(() => {
+        sync.pending = false;
+        const anchors = lineAnchors();
+        if (!anchors.length) return;
+        const y = window.scrollY + 16;
+        let line;
+        if (y <= anchors[0].top) {
+          line = 1 + (anchors[0].line - 1) * (anchors[0].top > 0 ? y / anchors[0].top : 0);
+        } else {
+          let i = anchors.length - 1;
+          while (i > 0 && anchors[i].top > y) i--;
+          const a = anchors[i], b = anchors[i + 1];
+          line = (b && b.top > a.top) ? a.line + (b.line - a.line) * (y - a.top) / (b.top - a.top) : a.line;
+        }
+        window.webkit.messageHandlers.scroll.postMessage(line);
+      });
+    }, { passive: true });
     // ⌘-double-click: select the word under the pointer and ask the app for its definition.
     document.addEventListener("dblclick", (event) => {
       if (!event.metaKey) return;

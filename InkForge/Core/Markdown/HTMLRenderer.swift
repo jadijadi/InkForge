@@ -9,38 +9,48 @@ struct HTMLRenderer: MarkupWalker {
     private(set) var html = ""
     /// Rewrites image sources (e.g. relative paths → preview scheme or EPUB-internal paths).
     var imageSourceTransform: (String) -> String = { $0 }
+    /// When set, block elements get a `data-line` attribute with their 1-based source line
+    /// (plus this offset), which the preview uses for scroll synchronisation.
+    var sourceLineOffset: Int?
 
-    static func render(_ markdown: String, imageSourceTransform: @escaping (String) -> String = { $0 }) -> String {
+    static func render(_ markdown: String, sourceLineOffset: Int? = nil,
+                       imageSourceTransform: @escaping (String) -> String = { $0 }) -> String {
         let document = Document(parsing: markdown)
         var renderer = HTMLRenderer()
         renderer.imageSourceTransform = imageSourceTransform
+        renderer.sourceLineOffset = sourceLineOffset
         renderer.visit(document)
         return renderer.html
+    }
+
+    private func lineAttribute(_ markup: Markup) -> String {
+        guard let offset = sourceLineOffset, let line = markup.range?.lowerBound.line else { return "" }
+        return " data-line=\"\(line + offset)\""
     }
 
     // MARK: Blocks
 
     mutating func visitHeading(_ heading: Heading) {
-        html += "<h\(heading.level) id=\"\(Self.slug(heading.plainText))\">"
+        html += "<h\(heading.level) id=\"\(Self.slug(heading.plainText))\"\(lineAttribute(heading))>"
         descendInto(heading)
         html += "</h\(heading.level)>\n"
     }
 
     mutating func visitParagraph(_ paragraph: Paragraph) {
-        html += "<p>"
+        html += "<p\(lineAttribute(paragraph))>"
         descendInto(paragraph)
         html += "</p>\n"
     }
 
     mutating func visitBlockQuote(_ blockQuote: BlockQuote) {
-        html += "<blockquote>\n"
+        html += "<blockquote\(lineAttribute(blockQuote))>\n"
         descendInto(blockQuote)
         html += "</blockquote>\n"
     }
 
     mutating func visitCodeBlock(_ codeBlock: CodeBlock) {
         let language = codeBlock.language.map { " class=\"language-\(Self.escapeAttribute($0))\"" } ?? ""
-        html += "<pre><code\(language)>\(Self.escape(codeBlock.code))</code></pre>\n"
+        html += "<pre\(lineAttribute(codeBlock))><code\(language)>\(Self.escape(codeBlock.code))</code></pre>\n"
     }
 
     mutating func visitHTMLBlock(_ htmlBlock: HTMLBlock) {
@@ -49,34 +59,34 @@ struct HTMLRenderer: MarkupWalker {
     }
 
     mutating func visitThematicBreak(_ thematicBreak: ThematicBreak) {
-        html += "<hr/>\n"
+        html += "<hr\(lineAttribute(thematicBreak))/>\n"
     }
 
     mutating func visitOrderedList(_ orderedList: OrderedList) {
         let start = orderedList.startIndex
-        html += start == 1 ? "<ol>\n" : "<ol start=\"\(start)\">\n"
+        html += start == 1 ? "<ol\(lineAttribute(orderedList))>\n" : "<ol start=\"\(start)\"\(lineAttribute(orderedList))>\n"
         descendInto(orderedList)
         html += "</ol>\n"
     }
 
     mutating func visitUnorderedList(_ unorderedList: UnorderedList) {
-        html += "<ul>\n"
+        html += "<ul\(lineAttribute(unorderedList))>\n"
         descendInto(unorderedList)
         html += "</ul>\n"
     }
 
     mutating func visitListItem(_ listItem: ListItem) {
         switch listItem.checkbox {
-        case .checked: html += "<li class=\"task\"><input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\"/> "
-        case .unchecked: html += "<li class=\"task\"><input type=\"checkbox\" disabled=\"disabled\"/> "
-        case nil: html += "<li>"
+        case .checked: html += "<li class=\"task\"\(lineAttribute(listItem))><input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\"/> "
+        case .unchecked: html += "<li class=\"task\"\(lineAttribute(listItem))><input type=\"checkbox\" disabled=\"disabled\"/> "
+        case nil: html += "<li\(lineAttribute(listItem))>"
         }
         descendInto(listItem)
         html += "</li>\n"
     }
 
     mutating func visitTable(_ table: Table) {
-        html += "<table>\n"
+        html += "<table\(lineAttribute(table))>\n"
         descendInto(table)
         html += "</table>\n"
     }

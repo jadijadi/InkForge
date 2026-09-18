@@ -11,6 +11,7 @@ struct MarkdownTextView: NSViewRepresentable {
     let reloadToken: Int
     let fontSize: Double
     var highlightMarkdown = true
+    var syncScrolling = true
     let onTextChange: (String) -> Void
 
     func makeCoordinator() -> Coordinator { Coordinator(fontSize: fontSize, onTextChange: onTextChange) }
@@ -60,9 +61,10 @@ struct MarkdownTextView: NSViewRepresentable {
         editorContainer.install(gutter: gutter, scrollView: scrollView)
 
         context.coordinator.highlighter.isEnabled = highlightMarkdown
+        context.coordinator.syncScrolling = syncScrolling
         context.coordinator.textView = textView
         context.coordinator.gutter = gutter
-        context.coordinator.installFocusObserver()
+        context.coordinator.installObservers(scrollView: scrollView)
         context.coordinator.load(text, from: fileURL, token: reloadToken)
         return editorContainer
     }
@@ -70,6 +72,7 @@ struct MarkdownTextView: NSViewRepresentable {
     func updateNSView(_ container: NSView, context: Context) {
         let coordinator = context.coordinator
         coordinator.onTextChange = onTextChange
+        coordinator.syncScrolling = syncScrolling
         var needsRehighlight = false
         if coordinator.highlighter.baseFont.pointSize != fontSize {
             coordinator.highlighter.setFontSize(fontSize)
@@ -103,13 +106,91 @@ struct MarkdownTextView: NSViewRepresentable {
 
         deinit { observers.forEach { NotificationCenter.default.removeObserver($0) } }
 
-        func installFocusObserver() {
-            observers.append(NotificationCenter.default.addObserver(
-                forName: .inkForgeFocusPane, object: nil, queue: .main
-            ) { [weak self] note in
+        func installObservers(scrollView: NSScrollView) {
+            let center = NotificationCenter.default
+            observers.append(center.addObserver(forName: .inkForgeFocusPane, object: nil, queue: .main) { [weak self] note in
                 guard note.object as? Pane == .editor, let textView = self?.textView else { return }
                 textView.window?.makeFirstResponder(textView)
             })
+            scrollView.contentView.postsBoundsChangedNotifications = true
+            observers.append(center.addObserver(forName: NSView.boundsDidChangeNotification, object: scrollView.contentView,
+                                                queue: .main) { [weak self] _ in self?.editorDidScroll() })
+            observers.append(center.addObserver(forName: .inkForgePreviewScrolled, object: nil, queue: .main) { [weak self] note in
+                guard let line = note.object as? Double else { return }
+                self?.scroll(toSourceLine: line)
+            })
+        }
+
+        // MARK: Scroll sync
+
+        /// UTF-16 offsets where each line starts; rebuilt whenever the text changes.
+        private var lineStarts: [Int] = [0]
+        private var lastProgrammaticScroll = Date.distantPast
+        var syncScrolling = true
+
+        private func rebuildLineStarts() {
+            guard let text = textView?.string as NSString? else { return }
+            var starts = [0]
+            var index = 0
+            while index < text.length {
+                let range = text.lineRange(for: NSRange(location: index, length: 0))
+                index = NSMaxRange(range)
+                if index < text.length || (range.length > 0 && text.character(at: index - 1) == 0x0A) { starts.append(index) }
+                if range.length == 0 { break }
+            }
+            lineStarts = starts
+        }
+
+        private func lineIndex(forCharacter location: Int) -> Int {
+            var low = 0, high = lineStarts.count - 1
+            while low < high {
+                let mid = (low + high + 1) / 2
+                if lineStarts[mid] <= location { low = mid } else { high = mid - 1 }
+            }
+            return low
+        }
+
+        /// Top y (in text view coordinates, excluding the inset) of a 0-based line index.
+        private func top(ofLine index: Int, layoutManager: NSLayoutManager, container: NSTextContainer) -> CGFloat {
+            guard index < lineStarts.count else { return layoutManager.usedRect(for: container).maxY }
+            let glyph = layoutManager.glyphIndexForCharacter(at: lineStarts[index])
+            if glyph >= layoutManager.numberOfGlyphs { return layoutManager.extraLineFragmentRect.minY }
+            return layoutManager.lineFragmentRect(forGlyphAt: glyph, effectiveRange: nil).minY
+        }
+
+        private func editorDidScroll() {
+            gutter?.needsDisplay = true
+            guard syncScrolling, Date().timeIntervalSince(lastProgrammaticScroll) > 0.25,
+                  let textView, let scrollView = textView.enclosingScrollView,
+                  let layoutManager = textView.layoutManager, let container = textView.textContainer,
+                  textView.window?.firstResponder === textView || scrollView.contentView.bounds.minY >= 0 else { return }
+            let y = scrollView.contentView.bounds.minY - textView.textContainerInset.height
+            guard y > 0 else {
+                NotificationCenter.default.post(name: .inkForgeEditorScrolled, object: 1.0)
+                return
+            }
+            let glyph = layoutManager.glyphIndex(for: NSPoint(x: 0, y: y), in: container)
+            let index = lineIndex(forCharacter: layoutManager.characterIndexForGlyph(at: glyph))
+            let lineTop = top(ofLine: index, layoutManager: layoutManager, container: container)
+            let nextTop = top(ofLine: index + 1, layoutManager: layoutManager, container: container)
+            let fraction = nextTop > lineTop ? min(1, max(0, (y - lineTop) / (nextTop - lineTop))) : 0
+            NotificationCenter.default.post(name: .inkForgeEditorScrolled, object: Double(index + 1) + fraction)
+        }
+
+        private func scroll(toSourceLine line: Double) {
+            guard syncScrolling, let textView, let scrollView = textView.enclosingScrollView,
+                  let layoutManager = textView.layoutManager, let container = textView.textContainer else { return }
+            let index = min(max(Int(line) - 1, 0), lineStarts.count - 1)
+            let fraction = CGFloat(line - Double(index + 1))
+            let lineTop = top(ofLine: index, layoutManager: layoutManager, container: container)
+            let nextTop = top(ofLine: index + 1, layoutManager: layoutManager, container: container)
+            var y = lineTop + max(0, nextTop - lineTop) * fraction + textView.textContainerInset.height
+            let maxY = max(0, textView.frame.height - scrollView.contentView.bounds.height)
+            y = min(max(0, y), maxY)
+            guard abs(scrollView.contentView.bounds.minY - y) > 1 else { return }
+            lastProgrammaticScroll = Date()
+            scrollView.contentView.scroll(to: NSPoint(x: 0, y: y))
+            scrollView.reflectScrolledClipView(scrollView.contentView)
         }
 
         /// Replaces the whole text. Reloading the same file (external change) keeps the caret and
@@ -127,6 +208,7 @@ struct MarkdownTextView: NSViewRepresentable {
             storage.replaceCharacters(in: NSRange(location: 0, length: storage.length), with: text)
             storage.endEditing()
             rehighlightAll()
+            rebuildLineStarts()
             isLoading = false
             textView.undoManager?.removeAllActions()
             if isSameFileReload, let scrollView = textView.enclosingScrollView, let scrollOrigin {
@@ -173,6 +255,8 @@ struct MarkdownTextView: NSViewRepresentable {
         func textDidChange(_ notification: Notification) {
             guard let textView, !isLoading else { return }
             textView.typingAttributes = highlighter.baseAttributes
+            rebuildLineStarts()
+            gutter?.needsDisplay = true
             onTextChange(textView.string)
         }
     }

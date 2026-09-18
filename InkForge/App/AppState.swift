@@ -374,7 +374,9 @@ final class AppState: ObservableObject {
         }
         let baseDirectory = document.url.deletingLastPathComponent()
         let body = FrontMatter.parse(document.text).body
-        previewHTML = HTMLRenderer.render(body) { source in
+        // Lines removed with the front matter shift every source line the preview reports.
+        let lineOffset = document.text.count(where: { $0 == "\n" }) - body.count(where: { $0 == "\n" })
+        previewHTML = HTMLRenderer.render(body, sourceLineOffset: lineOffset) { source in
             PreviewScheme.url(forImageSource: source, relativeTo: baseDirectory)
         }
     }
@@ -385,6 +387,10 @@ final class AppState: ObservableObject {
 
     func toggleFileBrowser() {
         settings.isFileBrowserVisible.toggle()
+    }
+
+    func toggleSyncScrolling() {
+        settings.syncScrolling.toggle()
     }
 
     // MARK: Agent

@@ -11,7 +11,8 @@ struct EditorPane: View {
             }
             if let document = app.document {
                 MarkdownTextView(fileURL: document.url, text: document.text, reloadToken: document.reloadToken,
-                                 fontSize: settings.editorFontSize, highlightMarkdown: document.isMarkdown) {
+                                 fontSize: settings.editorFontSize, highlightMarkdown: document.isMarkdown,
+                                 syncScrolling: settings.syncScrolling && document.isMarkdown) {
                     app.editorTextDidChange($0)
                 }
             } else if let url = app.unsupportedFileURL {

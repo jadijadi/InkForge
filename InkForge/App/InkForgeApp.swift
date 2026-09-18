@@ -67,6 +67,7 @@ struct InkForgeApp: App {
                 .disabled(app.project == nil)
             Button(app.settings.isPreviewVisible ? "Hide Preview" : "Show Preview") { app.togglePreview() }
                 .keyboardShortcut("p", modifiers: [.command, .option])
+            Toggle("Sync Scrolling", isOn: Binding(get: { app.settings.syncScrolling }, set: { app.settings.syncScrolling = $0 }))
         }
     }
 }
