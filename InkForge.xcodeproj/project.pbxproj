@@ -10,7 +10,6 @@
 		20A15E1EDBD557DC47703FB3 /* FileTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E49734A7F8AF4EA5BB5EA5B /* FileTree.swift */; };
 		25AFD395B43CF06B3D0D548C /* WindowAccessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 748B193F9E1A535983912732 /* WindowAccessor.swift */; };
 		2F2C9FDBE288F426D4230D40 /* MarkdownTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4EAEB9C288266E3787CE330 /* MarkdownTextView.swift */; };
-		3997CFC0EC71FD160F62D5BA /* PaneHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29479753BF2BE361F679E76E /* PaneHeader.swift */; };
 		3AA600D405BACA92C132AA21 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22D9F1E89843B05AD2261589 /* SettingsView.swift */; };
 		3CF9DF316CC51BD8F113BE99 /* PreviewScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 913F9B628EB4D82B4E2ABCF8 /* PreviewScheme.swift */; };
 		50FD4A03DA9CB3E20984F05F /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5076F457BDB82A1109373D /* FileWatcher.swift */; };
@@ -49,7 +48,6 @@
 		22D9F1E89843B05AD2261589 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		26188044238A62F6B6A95394 /* MainWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowView.swift; sourceTree = "<group>"; };
 		283AC998FAD6147810E68D03 /* TerminalPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalPane.swift; sourceTree = "<group>"; };
-		29479753BF2BE361F679E76E /* PaneHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaneHeader.swift; sourceTree = "<group>"; };
 		3DD13BABA71BB2AA8079257C /* EditorDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorDocument.swift; sourceTree = "<group>"; };
 		490D22C345DBED79ED8B5BB5 /* BookMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMetadata.swift; sourceTree = "<group>"; };
 		67BE97603087B70B60D1162B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -148,7 +146,6 @@
 			isa = PBXGroup;
 			children = (
 				8D73BDBF05B8E1059BEE2A89 /* MainSplitView.swift */,
-				29479753BF2BE361F679E76E /* PaneHeader.swift */,
 				748B193F9E1A535983912732 /* WindowAccessor.swift */,
 			);
 			path = Layout;
@@ -348,7 +345,6 @@
 				7F6FD9EB9DF3BB7165A5D854 /* MarkdownHighlighter.swift in Sources */,
 				2F2C9FDBE288F426D4230D40 /* MarkdownTextView.swift in Sources */,
 				F3D53E1B309F4A08048059FC /* Pane.swift in Sources */,
-				3997CFC0EC71FD160F62D5BA /* PaneHeader.swift in Sources */,
 				7AB54AD632D72991036025ED /* PreviewPane.swift in Sources */,
 				3CF9DF316CC51BD8F113BE99 /* PreviewScheme.swift in Sources */,
 				5D0A07F72C2296C9D53DB2DA /* ReadingStylesheet.swift in Sources */,

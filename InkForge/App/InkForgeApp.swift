@@ -62,6 +62,9 @@ struct InkForgeApp: App {
             Divider()
             Button(app.settings.isFileBrowserVisible ? "Hide Files" : "Show Files") { app.toggleFileBrowser() }
                 .keyboardShortcut("f", modifiers: [.command, .option])
+            Button("Refresh Files") { app.rescanFiles() }
+                .keyboardShortcut("r", modifiers: [.command, .option])
+                .disabled(app.project == nil)
             Button(app.settings.isPreviewVisible ? "Hide Preview" : "Show Preview") { app.togglePreview() }
                 .keyboardShortcut("p", modifiers: [.command, .option])
         }

@@ -5,25 +5,9 @@ struct PreviewPane: View {
     @EnvironmentObject private var app: AppState
 
     var body: some View {
-        VStack(spacing: 0) {
-            PaneHeader(title: "Preview", systemImage: "doc.richtext") {
-                if let document = app.document {
-                    Text(Self.wordCount(document.text).formatted() + " words")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
-                }
-            }
-            MarkdownWebView(html: app.previewHTML) { url in
-                app.openFile(url)
-            }
+        MarkdownWebView(html: app.previewHTML) { url in
+            app.openFile(url)
         }
-    }
-
-    private static func wordCount(_ text: String) -> Int {
-        var count = 0
-        text.enumerateSubstrings(in: text.startIndex..., options: [.byWords, .substringNotRequired]) { _, _, _, _ in count += 1 }
-        return count
     }
 }
 

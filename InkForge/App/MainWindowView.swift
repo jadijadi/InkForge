@@ -7,7 +7,7 @@ struct MainWindowView: View {
     var body: some View {
         VStack(spacing: 0) {
             MainSplitView(isFileBrowserVisible: settings.isFileBrowserVisible, isPreviewVisible: settings.isPreviewVisible)
-            StatusBar()
+            StatusBar(terminal: app.terminal)
         }
         .frame(minWidth: 900, minHeight: 500)
         .background(WindowAccessor(autosaveName: "InkForge.MainWindow"))
@@ -81,6 +81,11 @@ struct MainWindowView: View {
 private struct StatusBar: View {
     @EnvironmentObject private var app: AppState
     @ObservedObject private var settings = AppSettings.shared
+    @ObservedObject private var terminal: TerminalController
+
+    init(terminal: TerminalController) {
+        self.terminal = terminal
+    }
 
     var body: some View {
         HStack(spacing: 14) {
@@ -88,14 +93,23 @@ private struct StatusBar: View {
                 Label(project.rootURL.path.abbreviatingWithTilde, systemImage: "folder")
                     .lineLimit(1)
                     .truncationMode(.middle)
-                Label("Watching for changes", systemImage: "eye")
             } else {
                 Text("No project open")
             }
+            Label(terminal.isRunning ? "Shell running" : "Shell exited", systemImage: "terminal")
+                .foregroundStyle(terminal.isRunning ? .secondary : Color.orange)
             Spacer()
             if app.isExporting {
                 ProgressView().controlSize(.small)
                 Text("Exporting…")
+            }
+            if let document = app.document {
+                Text(Self.wordCount(document.text).formatted() + " words").monospacedDigit()
+                if document.isDirty {
+                    Text(settings.autosaveEnabled ? "Saving…" : "Edited")
+                } else {
+                    Label("Saved", systemImage: "checkmark.circle").labelStyle(.iconOnly)
+                }
             }
             Text("Agent: \(settings.agentCommand)")
         }
@@ -105,6 +119,12 @@ private struct StatusBar: View {
         .frame(height: 24)
         .background(.bar)
         .overlay(alignment: .top) { Divider() }
+    }
+
+    private static func wordCount(_ text: String) -> Int {
+        var count = 0
+        text.enumerateSubstrings(in: text.startIndex..., options: [.byWords, .substringNotRequired]) { _, _, _, _ in count += 1 }
+        return count
     }
 }
 

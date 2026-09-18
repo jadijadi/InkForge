@@ -4,13 +4,7 @@ struct FileBrowserPane: View {
     @EnvironmentObject private var app: AppState
 
     var body: some View {
-        VStack(spacing: 0) {
-            PaneHeader(title: app.project?.name ?? "Files", systemImage: "folder") {
-                Button { app.rescanFiles() } label: { Image(systemName: "arrow.clockwise") }
-                    .buttonStyle(.borderless)
-                    .help("Refresh")
-                    .disabled(app.project == nil)
-            }
+        Group {
             if app.project == nil {
                 VStack(spacing: 10) {
                     Text("No project open").foregroundStyle(.secondary)

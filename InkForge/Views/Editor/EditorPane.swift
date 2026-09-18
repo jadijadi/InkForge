@@ -6,7 +6,6 @@ struct EditorPane: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            header
             if let conflict = app.conflict {
                 ConflictBanner(conflict: conflict)
             }
@@ -21,63 +20,6 @@ struct EditorPane: View {
                 emptyState
             }
         }
-    }
-
-    private var header: some View {
-        HStack(spacing: 8) {
-            if let project = app.project {
-                Menu {
-                    if app.markdownFiles.isEmpty {
-                        Text("No Markdown files")
-                    }
-                    ForEach(app.markdownFiles, id: \.self) { url in
-                        Button {
-                            app.openFile(url)
-                        } label: {
-                            if url == app.document?.url {
-                                Label(project.relativePath(for: url), systemImage: "checkmark")
-                            } else {
-                                Text(project.relativePath(for: url))
-                            }
-                        }
-                    }
-                    Divider()
-                    Button("New File…") { app.promptForNewFile() }
-                    Button("Reveal Project in Finder") { NSWorkspace.shared.activateFileViewerSelecting([project.rootURL]) }
-                } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "doc.text")
-                        Text((app.document?.url ?? app.unsupportedFileURL).map { project.relativePath(for: $0) } ?? "Choose a file")
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
-                    .font(.callout.weight(.medium))
-                }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
-            } else {
-                Label("Editor", systemImage: "doc.text")
-                    .font(.callout.weight(.medium))
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 4)
-            if let document = app.document {
-                if document.isDirty {
-                    Text(settings.autosaveEnabled ? "Saving…" : "Edited")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Image(systemName: "checkmark.circle")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                        .help("Saved")
-                }
-            }
-        }
-        .padding(.horizontal, 12)
-        .frame(height: 30)
-        .background(.bar)
-        .overlay(alignment: .bottom) { Divider() }
     }
 
     private func unsupportedState(_ url: URL) -> some View {
