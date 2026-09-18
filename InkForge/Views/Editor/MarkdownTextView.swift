@@ -216,6 +216,30 @@ final class EditorTextView: NSTextView {
 
     override var acceptsFirstResponder: Bool { true }
 
+    /// ⌘-double-click selects the word under the pointer and shows its dictionary definition.
+    override func mouseDown(with event: NSEvent) {
+        guard event.clickCount == 2, event.modifierFlags.contains(.command) else {
+            super.mouseDown(with: event)
+            return
+        }
+        let point = convert(event.locationInWindow, from: nil)
+        let index = characterIndexForInsertion(at: point)
+        let wordRange = selectionRange(forProposedRange: NSRange(location: index, length: 0), granularity: .selectByWord)
+        guard wordRange.length > 0 else { return }
+        setSelectedRange(wordRange)
+        showDefinition(forSelectedRange: wordRange)
+    }
+
+    func showDefinition(forSelectedRange range: NSRange) {
+        guard let storage = textStorage, let layoutManager, let textContainer else { return }
+        let word = storage.attributedSubstring(from: range)
+        let glyphRange = layoutManager.glyphRange(forCharacterRange: range, actualCharacterRange: nil)
+        let rect = layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer)
+        let ascender = (font ?? NSFont.systemFont(ofSize: NSFont.systemFontSize)).ascender
+        let baseline = NSPoint(x: rect.minX + textContainerInset.width, y: rect.minY + textContainerInset.height + ascender)
+        showDefinition(for: word, at: baseline)
+    }
+
     /// Tab inserts spaces so Markdown nesting stays portable; with a selection it indents
     /// the selected lines rather than replacing them.
     override func insertTab(_ sender: Any?) {
