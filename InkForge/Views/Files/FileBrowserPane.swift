@@ -2,81 +2,62 @@ import SwiftUI
 
 struct FileBrowserPane: View {
     @EnvironmentObject private var app: AppState
+    @ObservedObject private var settings = AppSettings.shared
 
     var body: some View {
-        Group {
-            if app.project == nil {
-                VStack(spacing: 10) {
-                    Text("No project open").foregroundStyle(.secondary)
-                    Button("Open Project…") { app.chooseProject() }
-                }
-                .font(.callout)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                List(app.fileTree, children: \.children, selection: selection) { node in
-                    FileRow(node: node)
-                        .tag(node.url)
-                        .contextMenu { contextMenu(for: node) }
-                }
-                .listStyle(.sidebar)
-                .environment(\.defaultMinListRowHeight, 22)
+        VStack(spacing: 0) {
+            rootPicker
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+            Divider()
+            FileOutlineView(rootURL: app.browserRootURL, revealURL: app.browserRevealURL,
+                            treeVersion: app.fileTreeVersion) { url in
+                app.selectInBrowser(url)
             }
         }
     }
 
-    private var selection: Binding<URL?> {
-        Binding(get: { app.selectedURL }, set: { url in
-            app.selectedURL = url
-            app.selectInBrowser(url)
-        })
-    }
-
-    @ViewBuilder
-    private func contextMenu(for node: FileNode) -> some View {
-        if node.isDirectory {
-            Button("Go Here in Terminal") { app.terminal.changeDirectory(to: node.url) }
-        } else {
-            Button("Open with Default App") { NSWorkspace.shared.open(node.url) }
-        }
-        Button("Reveal in Finder") { NSWorkspace.shared.activateFileViewerSelecting([node.url]) }
-        Divider()
-        Button("Copy Path") {
-            NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(node.url.path, forType: .string)
-        }
-    }
-}
-
-private struct FileRow: View {
-    @EnvironmentObject private var app: AppState
-    let node: FileNode
-
-    var body: some View {
-        Label {
-            Text(node.name)
+    private var rootPicker: some View {
+        Menu {
+            Button { app.setBrowserRoot(FileManager.default.homeDirectoryForCurrentUser) } label: {
+                Label("Home", systemImage: "house")
+            }
+            Button { app.setBrowserRoot(URL(fileURLWithPath: "/")) } label: {
+                Label("Macintosh HD", systemImage: "internaldrive")
+            }
+            if let project = app.project {
+                Button { app.setBrowserRoot(project.rootURL) } label: {
+                    Label(project.name, systemImage: "book.closed")
+                }
+            }
+            Divider()
+            Button("Choose Folder…") { app.chooseBrowserRoot() }
+            Divider()
+            Button("Refresh") { app.rescanFiles() }
+                .keyboardShortcut("r", modifiers: [.command, .option])
+        } label: {
+            Label(rootTitle, systemImage: rootIcon)
+                .font(.callout.weight(.medium))
                 .lineLimit(1)
                 .truncationMode(.middle)
-        } icon: {
-            Image(systemName: icon)
-                .foregroundStyle(iconColor)
         }
-        .font(.callout)
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var icon: String {
-        if node.isDirectory { return "folder" }
-        if node.isMarkdown { return "doc.text" }
-        if node.isImage { return "photo" }
-        switch node.url.pathExtension.lowercased() {
-        case "epub": return "book.closed"
-        case "json", "yaml", "yml", "toml": return "curlybraces"
-        default: return "doc"
-        }
+    private var rootTitle: String {
+        let root = app.browserRootURL
+        if root == FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL { return "Home" }
+        if root.path == "/" { return "Macintosh HD" }
+        return root.lastPathComponent
     }
 
-    private var iconColor: Color {
-        if node.isDirectory { return .accentColor }
-        if node.isMarkdown { return .primary }
-        return .secondary
+    private var rootIcon: String {
+        let root = app.browserRootURL
+        if root == FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL { return "house" }
+        if root.path == "/" { return "internaldrive" }
+        if root == app.project?.rootURL { return "book.closed" }
+        return "folder"
     }
 }

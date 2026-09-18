@@ -18,6 +18,7 @@ final class AppSettings: ObservableObject {
         static let lastProjectPath = "lastProjectPath"
         static let lastFileByProject = "lastFileByProject"
         static let recentProjects = "recentProjects"
+        static let browserRootPath = "browserRootPath"
     }
 
     private let defaults: UserDefaults
@@ -51,6 +52,16 @@ final class AppSettings: ObservableObject {
     }
 
     // MARK: Session state
+
+    var browserRootURL: URL {
+        get {
+            if let path = defaults.string(forKey: Key.browserRootPath), FileManager.default.fileExists(atPath: path) {
+                return URL(fileURLWithPath: path).standardizedFileURL
+            }
+            return FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL
+        }
+        set { defaults.set(newValue.standardizedFileURL.path, forKey: Key.browserRootPath) }
+    }
 
     var lastProjectURL: URL? {
         get { defaults.string(forKey: Key.lastProjectPath).map { URL(fileURLWithPath: $0) } }

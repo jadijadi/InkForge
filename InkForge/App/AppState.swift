@@ -11,9 +11,12 @@ final class AppState: ObservableObject {
 
     @Published private(set) var project: BookProject?
     @Published private(set) var markdownFiles: [URL] = []
-    @Published private(set) var fileTree: [FileNode] = []
-    /// Selection in the file browser; may be a directory.
-    @Published var selectedURL: URL?
+    /// Folder the file browser is rooted at (home by default).
+    @Published private(set) var browserRootURL: URL
+    /// Location the browser should expand to and select.
+    @Published private(set) var browserRevealURL: URL?
+    /// Bumped whenever the browser should re-read the disk.
+    @Published private(set) var fileTreeVersion = 0
     /// A selected file the editor can't show (binary or too large).
     @Published private(set) var unsupportedFileURL: URL?
     @Published private(set) var document: EditorDocument?
@@ -40,6 +43,7 @@ final class AppState: ObservableObject {
     init(settings: AppSettings) {
         self.settings = settings
         self.terminal = TerminalController(settings: settings)
+        self.browserRootURL = settings.browserRootURL
         settings.$autosaveEnabled.dropFirst().sink { [weak self] enabled in
             if enabled { self?.scheduleAutosave() }
         }.store(in: &cancellables)
@@ -80,7 +84,6 @@ final class AppState: ObservableObject {
             document = nil
             conflict = nil
             previewHTML = ""
-            selectedURL = nil
             unsupportedFileURL = nil
 
             watcher?.stop()
@@ -91,6 +94,7 @@ final class AppState: ObservableObject {
             terminal.start(in: project.rootURL)
         }
         rescanFiles()
+        revealInBrowser(project.rootURL)
 
         if let file, FileManager.default.fileExists(atPath: file.path) {
             openFile(file)
@@ -117,20 +121,51 @@ final class AppState: ObservableObject {
     }
 
     func rescanFiles() {
-        guard let project else { markdownFiles = []; fileTree = []; return }
-        markdownFiles = project.scanMarkdownFiles()
-        fileTree = FileTree.build(root: project.rootURL)
+        markdownFiles = project?.scanMarkdownFiles() ?? []
+        fileTreeVersion += 1
     }
 
-    /// Selection from the file browser: directories move the terminal, files open in the editor.
-    func selectInBrowser(_ url: URL?) {
-        guard let url else { return }
+    // MARK: File browser
+
+    func setBrowserRoot(_ url: URL) {
+        let url = url.standardizedFileURL
+        settings.browserRootURL = url
+        browserRootURL = url
+        browserRevealURL = nil
+    }
+
+    func chooseBrowserRoot() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Browse"
+        panel.directoryURL = browserRootURL
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        setBrowserRoot(url)
+    }
+
+    /// Makes sure `url` is under the browser root (switching to / if needed), then expands to it.
+    private func revealInBrowser(_ url: URL) {
+        let url = url.standardizedFileURL
+        let rootPath = browserRootURL.path == "/" ? "/" : browserRootURL.path + "/"
+        if !url.path.hasPrefix(rootPath) {
+            setBrowserRoot(URL(fileURLWithPath: "/"))
+        }
+        browserRevealURL = url
+    }
+
+    /// Selection from the file browser: folders move the terminal; files open in the editor,
+    /// switching projects when the file lives outside the current one.
+    func selectInBrowser(_ url: URL) {
         var isDirectory: ObjCBool = false
         guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) else { return }
         if isDirectory.boolValue {
             terminal.changeDirectory(to: url)
-        } else {
+        } else if let project, url.standardizedFileURL.path.hasPrefix(project.rootURL.path + "/") {
             openFile(url)
+        } else {
+            openProject(at: BookProject.projectRoot(containing: url), then: url)
         }
     }
 
@@ -142,7 +177,7 @@ final class AppState: ObservableObject {
         guard let project else { return }
         flushPendingSave()
         let url = url.standardizedFileURL
-        selectedURL = url
+        revealInBrowser(url)
         terminal.changeDirectory(to: url.deletingLastPathComponent())
 
         let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
@@ -316,7 +351,6 @@ final class AppState: ObservableObject {
         document = nil
         conflict = nil
         previewHTML = ""
-        selectedURL = nil
         rescanFiles()
     }
 
